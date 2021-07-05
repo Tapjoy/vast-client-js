@@ -2,6 +2,7 @@
 [![downloads per week](https://badgen.net/npm/dw/vast-client)](https://badgen.net/npm/dw/vast-client)
 [![license](https://badgen.net/npm/license/vast-client)](https://badgen.net/npm/license/vast-client)
 
+
 # VAST Client JS
 Vast Client JS is a JavaScript library to fetch and parse Digital Video Ad Serving Template (VAST) documents.
 

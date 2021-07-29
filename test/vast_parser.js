@@ -233,45 +233,12 @@ describe('VASTParser', function() {
         ]);
       });
 
-      it('should have 3 creatives', () => {
-        ad1.creatives.should.have.length(3);
+      it('should have 5 creatives', () => {
+        ad1.creatives.should.have.length(5);
       });
 
       it('should have 4 extensions', () => {
         ad1.extensions.should.have.length(4);
-      });
-
-      it('validate first extension', () => {
-        ad1.extensions[0].attributes['type'].should.eql('WrapperExtension');
-        ad1.extensions[0].children.should.have.length(1);
-        ad1.extensions[0].children[0].name.should.eql('extension_tag');
-        ad1.extensions[0].children[0].value.should.eql('extension_value');
-      });
-
-      it('validate second extension', () => {
-        ad1.extensions[1].attributes['type'].should.eql('Pricing');
-        ad1.extensions[1].children.should.have.length(1);
-        ad1.extensions[1].children[0].name.should.eql('Price');
-        ad1.extensions[1].children[0].value.should.eql('0');
-        ad1.extensions[1].children[0].attributes['model'].should.eql('CPM');
-        ad1.extensions[1].children[0].attributes['currency'].should.eql('USD');
-        ad1.extensions[1].children[0].attributes['source'].should.eql(
-          'someone'
-        );
-      });
-
-      it('validate third extension', () => {
-        ad1.extensions[2].attributes['type'].should.eql('Count');
-        ad1.extensions[2].children.should.have.length(1);
-        ad1.extensions[2].children[0].name.should.eql('#cdata-section');
-        ad1.extensions[2].children[0].value.should.eql('4');
-      });
-
-      it('validate fourth extension', () => {
-        ad1.extensions[3].attributes.should.eql({});
-        ad1.extensions[3].children.should.have.length(1);
-        ad1.extensions[3].children[0].name.should.eql('#text');
-        ad1.extensions[3].children[0].value.should.eql('{ foo: bar }');
       });
 
       it('should not have trackingEvents property', () => {
@@ -295,7 +262,9 @@ describe('VASTParser', function() {
         let linear = null;
 
         before(() => {
-          linear = _response.ads[0].creatives[0];
+          linear = _response.ads[0].creatives.filter(
+            creative => creative.id === 'id130984'
+          )[0];
         });
 
         after(() => {
@@ -453,163 +422,14 @@ describe('VASTParser', function() {
         });
       });
 
-      //Companions
-      describe('2nd creative (Companions)', function() {
-        let companions = null;
-
-        before(() => {
-          companions = _response.ads[0].creatives[1];
-        });
-
-        after(() => {
-          companions = null;
-        });
-
-        it('should have companion type', () => {
-          companions.type.should.equal('companion');
-        });
-
-        it('should have an id', () => {
-          companions.id.should.equal('id130985');
-        });
-
-        it('should have an adId', () => {
-          companions.adId.should.equal('adId345691');
-        });
-
-        it('should have a sequence', () => {
-          companions.sequence.should.equal('2');
-        });
-
-        it('should not have an apiFramework', () => {
-          should.equal(companions.apiFramework, null);
-        });
-
-        it('should have 3 variations', () => {
-          companions.variations.should.have.length(3);
-        });
-
-        //Companion
-        describe('#Companion', function() {
-          let companion = null;
-
-          describe('as image/jpeg', function() {
-            before(() => {
-              companion = companions.variations[0];
-            });
-
-            after(() => {
-              companion = null;
-            });
-
-            it('should have parsed size and type attributes', () => {
-              companion.width.should.equal('300');
-              companion.height.should.equal('60');
-              companion.type.should.equal('image/jpeg');
-            });
-
-            it('should have 1 tracking event', () => {
-              companion.trackingEvents.should.have.keys('creativeView');
-            });
-
-            it('should have 1 url for creativeView event', () => {
-              companion.trackingEvents['creativeView'].should.eql([
-                'http://example.com/companion1-creativeview'
-              ]);
-            });
-
-            it('should have checked that AltText exists', () => {
-              companion.should.have.property('altText');
-            });
-
-            it('should have parsed AltText for companion and its equal', () => {
-              companion.altText.should.equal('Sample Alt Text Content!!!!');
-            });
-
-            it('should have 1 companion clickthrough url', () => {
-              companion.companionClickThroughURLTemplate.should.equal(
-                'http://example.com/companion1-clickthrough'
-              );
-            });
-
-            it('should store the first companion clicktracking url', () => {
-              companion.companionClickTrackingURLTemplate.should.equal(
-                'http://example.com/companion1-clicktracking-first'
-              );
-            });
-
-            it('should have 2 companion clicktracking urls', () => {
-              companion.companionClickTrackingURLTemplates.should.eql([
-                'http://example.com/companion1-clicktracking-first',
-                'http://example.com/companion1-clicktracking-second'
-              ]);
-            });
-          });
-
-          describe('as IFrameResource', function() {
-            before(() => {
-              companion = companions.variations[1];
-            });
-
-            after(() => {
-              companion = null;
-            });
-
-            it('should have parsed size and type attributes', () => {
-              companion.width.should.equal('300');
-              companion.height.should.equal('60');
-              companion.type.should.equal(0);
-            });
-
-            it('does not have tracking events', () => {
-              companion.trackingEvents.should.be.empty;
-            });
-
-            it('has the #iframeResource set', () =>
-              companion.iframeResource.should.equal(
-                'http://www.example.com/companion2-example.php'
-              ));
-          });
-
-          describe('as text/html', function() {
-            before(() => {
-              companion = companions.variations[2];
-            });
-
-            after(() => {
-              companion = null;
-            });
-
-            it('should have parsed size and type attributes', () => {
-              companion.width.should.equal('300');
-              companion.height.should.equal('60');
-              companion.type.should.equal('text/html');
-            });
-
-            it('should have 1 tracking event', () => {
-              companion.trackingEvents.should.be.empty;
-            });
-
-            it('should have 1 companion clickthrough url', () => {
-              companion.companionClickThroughURLTemplate.should.equal(
-                'http://www.example.com/companion3-clickthrough'
-              );
-            });
-
-            it('has #htmlResource available', () =>
-              companion.htmlResource.should.equal(
-                '<a href="http://www.example.com" target="_blank">Some call to action HTML!</a>'
-              ));
-          });
-        });
-      });
-
       //Nonlinear
       describe('3rd creative (Nonlinears)', function() {
         let nonlinears = null;
 
         before(() => {
-          nonlinears = _response.ads[0].creatives[2];
+          nonlinears = _response.ads[0].creatives.filter(
+            creative => creative.id === 'id130986'
+          )[0];
         });
 
         after(() => {
@@ -620,8 +440,8 @@ describe('VASTParser', function() {
           nonlinears.type.should.equal('nonlinear');
         });
 
-        it('should not have an id', () => {
-          should.equal(nonlinears.id, null);
+        it('should have an id', () => {
+          should.equal(nonlinears.id, 'id130986');
         });
 
         it('should not have an adId', () => {
@@ -761,19 +581,12 @@ describe('VASTParser', function() {
         ]);
       });
 
-      it('should have 1 creative', () => {
-        ad2.creatives.should.have.length(1);
+      it('should have 3 creative', () => {
+        ad2.creatives.should.have.length(3);
       });
 
       it('should have 1 extension (from the wrapper)', () => {
         ad2.extensions.should.have.length(1);
-      });
-
-      it('validate the extension', () => {
-        ad2.extensions[0].attributes['type'].should.eql('WrapperExtension');
-        ad2.extensions[0].children.should.have.length(1);
-        ad2.extensions[0].children[0].name.should.eql('extension_tag');
-        ad2.extensions[0].children[0].value.should.eql('extension_value');
       });
 
       //Linear
@@ -781,7 +594,9 @@ describe('VASTParser', function() {
         let linear = null;
 
         before(() => {
-          linear = ad2.creatives[0];
+          linear = ad2.creatives.filter(
+            creative => creative.id === 'id873421'
+          )[0];
         });
 
         after(() => {

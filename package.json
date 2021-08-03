@@ -24,6 +24,7 @@
   },
   "main": "dist/vast-client-node.min.js",
   "module": "src/index.js",
+  "types": "src/index.d.ts",
   "browser": {
     "dist/vast-client.min.js": "dist/vast-client.min.js"
   },

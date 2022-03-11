@@ -1,22 +1,12 @@
-import babel from 'rollup-plugin-babel';
-import uglify from 'rollup-plugin-uglify';
-import externalHelpers from 'babel-plugin-external-helpers';
-import builtins from 'rollup-plugin-node-builtins';
-import alias from 'rollup-plugin-alias';
-import resolve from 'rollup-plugin-node-resolve';
+import babel from '@rollup/plugin-babel';
+import { terser } from 'rollup-plugin-terser';
+import alias from '@rollup/plugin-alias';
+import resolve from '@rollup/plugin-node-resolve';
 
 const babelPlugin = babel({
   babelrc: false,
-  presets: [
-    [
-      'es2015',
-      {
-        modules: false
-      }
-    ]
-  ],
-  plugins: [externalHelpers],
-  exclude: ['node_modules/**']
+  presets: [['@babel/preset-env', { modules: false }]],
+  exclude: ['node_modules/**'],
 });
 
 function onwarn(warning) {
@@ -37,7 +27,7 @@ function minify(config) {
     '.min' +
     outputFile.substr(extensionIndex);
 
-  minifiedConfig.plugins.push(uglify());
+  minifiedConfig.plugins.push(terser());
 
   return minifiedConfig;
 }
@@ -46,31 +36,43 @@ const browserConfig = {
   input: 'src/index.js',
   output: {
     name: 'VAST',
-    format: 'iife',
-    file: 'dist/vast-client.js'
+    format: 'umd',
+    file: 'dist/vast-client.js',
   },
-  plugins: [
-    builtins(), // Needed for node EventEmitter class
-    babelPlugin
-  ]
+  plugins: [babelPlugin],
+};
+
+const browserScriptConfig = {
+  input: 'src/index.js',
+  output: {
+    name: 'VAST',
+    format: 'iife',
+    file: 'dist/vast-client-browser.js',
+  },
+  plugins: [babelPlugin],
 };
 
 const nodeConfig = {
   input: 'src/index.js',
   output: {
     format: 'cjs',
-    file: 'dist/vast-client-node.js'
+    file: 'dist/vast-client-node.js',
   },
   plugins: [
     alias({
-      './urlhandlers/mock_node_url_handler': './urlhandlers/node_url_handler'
+      entries: [
+        {
+          find: './urlhandlers/mock_node_url_handler',
+          replacement: './urlhandlers/node_url_handler',
+        },
+      ],
     }),
     resolve({
-      preferBuiltins: true
+      preferBuiltins: true,
     }),
-    babelPlugin
+    babelPlugin,
   ],
-  onwarn
+  onwarn,
 };
 
 export default [
@@ -80,5 +82,7 @@ export default [
 
   // CommonJS build for Node usage [package.json "main"]
   nodeConfig,
-  minify(nodeConfig)
+  minify(nodeConfig),
+
+  minify(browserScriptConfig),
 ];

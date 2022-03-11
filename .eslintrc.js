@@ -2,12 +2,13 @@ module.exports = {
   env: {
     browser: true,
     es6: true,
-    node: true
+    node: true,
   },
   extends: 'eslint:recommended',
+  parser: 'babel-eslint',
   parserOptions: {
     ecmaVersion: 2015,
-    sourceType: 'module'
+    sourceType: 'module',
   },
   plugins: ['import'],
   rules: {
@@ -31,7 +32,7 @@ module.exports = {
     'no-multiple-empty-lines': ['warn'],
     'no-multi-spaces': [
       'warn',
-      { exceptions: { VariableDeclarator: true, ImportDeclaration: true } }
+      { exceptions: { VariableDeclarator: true, ImportDeclaration: true } },
     ],
     'no-restricted-globals': ['error', 'fdescribe', 'fit'],
     'no-shadow': ['error'],
@@ -40,13 +41,14 @@ module.exports = {
     'no-unreachable': ['error'],
     'no-unused-vars': [
       'error',
-      { argsIgnorePattern: '^_', ignoreRestSiblings: true, args: 'after-used' }
+      { argsIgnorePattern: '^_', ignoreRestSiblings: true, args: 'after-used' },
     ],
+    'no-prototype-builtins': ['off'],
     'no-var': ['error'],
     'object-shorthand': ['warn'],
     'prefer-const': ['error'],
     'prefer-rest-params': ['error'],
     'prefer-spread': ['warn'],
-    'prefer-template': ['warn']
-  }
+    'prefer-template': ['warn'],
+  },
 };

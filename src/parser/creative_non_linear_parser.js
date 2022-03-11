@@ -1,5 +1,5 @@
-import { CreativeNonLinear } from '../creative/creative_non_linear';
-import { NonLinearAd } from '../non_linear_ad';
+import { createCreativeNonLinear } from '../creative/creative_non_linear';
+import { createNonLinearAd } from '../non_linear_ad';
 import { parserUtils } from './parser_utils';
 
 /**
@@ -10,18 +10,17 @@ import { parserUtils } from './parser_utils';
  * Parses a NonLinear element.
  * @param  {any} creativeElement - The VAST NonLinear element to parse.
  * @param  {any} creativeAttributes - The attributes of the NonLinear (optional).
- * @return {CreativeNonLinear}
+ * @return {Object} creative - The CreativeNonLinear object.
  */
 export function parseCreativeNonLinear(creativeElement, creativeAttributes) {
-  const creative = new CreativeNonLinear(creativeAttributes);
-
+  const creative = createCreativeNonLinear(creativeAttributes);
   parserUtils
     .childrenByName(creativeElement, 'TrackingEvents')
-    .forEach(trackingEventsElement => {
+    .forEach((trackingEventsElement) => {
       let eventName, trackingURLTemplate;
       parserUtils
         .childrenByName(trackingEventsElement, 'Tracking')
-        .forEach(trackingElement => {
+        .forEach((trackingElement) => {
           eventName = trackingElement.getAttribute('event');
           trackingURLTemplate = parserUtils.parseNodeText(trackingElement);
 
@@ -36,17 +35,15 @@ export function parseCreativeNonLinear(creativeElement, creativeAttributes) {
 
   parserUtils
     .childrenByName(creativeElement, 'NonLinear')
-    .forEach(nonlinearResource => {
-      const nonlinearAd = new NonLinearAd();
+    .forEach((nonlinearResource) => {
+      const nonlinearAd = createNonLinearAd();
       nonlinearAd.id = nonlinearResource.getAttribute('id') || null;
       nonlinearAd.width = nonlinearResource.getAttribute('width');
       nonlinearAd.height = nonlinearResource.getAttribute('height');
-      nonlinearAd.expandedWidth = nonlinearResource.getAttribute(
-        'expandedWidth'
-      );
-      nonlinearAd.expandedHeight = nonlinearResource.getAttribute(
-        'expandedHeight'
-      );
+      nonlinearAd.expandedWidth =
+        nonlinearResource.getAttribute('expandedWidth');
+      nonlinearAd.expandedHeight =
+        nonlinearResource.getAttribute('expandedHeight');
       nonlinearAd.scalable = parserUtils.parseBoolean(
         nonlinearResource.getAttribute('scalable')
       );
@@ -60,7 +57,7 @@ export function parseCreativeNonLinear(creativeElement, creativeAttributes) {
 
       parserUtils
         .childrenByName(nonlinearResource, 'HTMLResource')
-        .forEach(htmlElement => {
+        .forEach((htmlElement) => {
           nonlinearAd.type =
             htmlElement.getAttribute('creativeType') || 'text/html';
           nonlinearAd.htmlResource = parserUtils.parseNodeText(htmlElement);
@@ -68,14 +65,14 @@ export function parseCreativeNonLinear(creativeElement, creativeAttributes) {
 
       parserUtils
         .childrenByName(nonlinearResource, 'IFrameResource')
-        .forEach(iframeElement => {
+        .forEach((iframeElement) => {
           nonlinearAd.type = iframeElement.getAttribute('creativeType') || 0;
           nonlinearAd.iframeResource = parserUtils.parseNodeText(iframeElement);
         });
 
       parserUtils
         .childrenByName(nonlinearResource, 'StaticResource')
-        .forEach(staticElement => {
+        .forEach((staticElement) => {
           nonlinearAd.type = staticElement.getAttribute('creativeType') || 0;
           nonlinearAd.staticResource = parserUtils.parseNodeText(staticElement);
         });
@@ -93,10 +90,11 @@ export function parseCreativeNonLinear(creativeElement, creativeAttributes) {
       );
       parserUtils
         .childrenByName(nonlinearResource, 'NonLinearClickTracking')
-        .forEach(clickTrackingElement => {
-          nonlinearAd.nonlinearClickTrackingURLTemplates.push(
-            parserUtils.parseNodeText(clickTrackingElement)
-          );
+        .forEach((clickTrackingElement) => {
+          nonlinearAd.nonlinearClickTrackingURLTemplates.push({
+            id: clickTrackingElement.getAttribute('id') || null,
+            url: parserUtils.parseNodeText(clickTrackingElement),
+          });
         });
 
       creative.variations.push(nonlinearAd);

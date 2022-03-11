@@ -56,9 +56,7 @@ describe('VASTTracker', function() {
       before(() => {
         // Init tracker
         const ad = this.response.ads[0];
-        const creative = ad.creatives.filter(
-          creative => creative.id === 'id130984'
-        )[0];
+        const creative = this.response.ads[0].creatives[0];
         this.Tracker = new VASTTracker(vastClient, ad, creative);
         // Mock emit
         this.Tracker.emit = event => {
@@ -454,9 +452,7 @@ describe('VASTTracker', function() {
       before(() => {
         // Init tracker
         const ad = this.response.ads[0];
-        const creative = ad.creatives.filter(
-          creative => creative.id === 'id130984'
-        )[0];
+        const creative = this.response.ads[0].creatives[0];
         this.Tracker = new VASTTracker(vastClient, ad, creative);
         // Mock emit
         this.Tracker.emit = event => {
@@ -484,9 +480,7 @@ describe('VASTTracker', function() {
       before(() => {
         // Init tracker
         const ad = this.response.ads[0];
-        const creative = ad.creatives.filter(
-          creative => creative.id === 'id130985'
-        )[0];
+        const creative = ad.creatives[1];
         const variation = creative.variations[0];
         this.Tracker = new VASTTracker(vastClient, ad, creative, variation);
         // Mock emit
@@ -511,9 +505,7 @@ describe('VASTTracker', function() {
           );
           _eventsSent[0].should.eql([
             'http://example.com/companion1-clicktracking-first',
-            'http://example.com/companion1-clicktracking-second',
-            'http://example.com/wrapperB-companion1-click-tracking',
-            'http://example.com/wrapperA-companion1-click-tracking'
+            'http://example.com/companion1-clicktracking-second'
           ]);
         });
 
@@ -530,9 +522,7 @@ describe('VASTTracker', function() {
       before(() => {
         // Init tracker
         const ad = this.response.ads[0];
-        const creative = ad.creatives.filter(
-          creative => creative.id === 'id130986'
-        )[0];
+        const creative = ad.creatives[2];
         const variation = creative.variations[0];
         this.Tracker = new VASTTracker(vastClient, ad, creative, variation);
         // Mock emit

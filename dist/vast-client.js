@@ -226,6 +226,28 @@ var VAST = (function (exports) {
     }, []);
   }
 
+  /**
+   * Joins two arrays without duplicates
+   * @param {Array} arr1
+   * @param {Array} arr2
+   * @return {Array}
+   */
+  function joinArrayUnique() {
+    var arr1 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+    var arr2 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+
+    var firstArr = Array.isArray(arr1) ? arr1 : [];
+    var secondArr = Array.isArray(arr2) ? arr2 : [];
+    var arr = firstArr.concat(secondArr);
+
+    return arr.reduce(function (res, val) {
+      if (res.indexOf(val) === -1) {
+        res.push(val);
+      }
+      return res;
+    }, []);
+  }
+
   var util = {
     track: track,
     resolveURLTemplates: resolveURLTemplates,
@@ -233,7 +255,8 @@ var VAST = (function (exports) {
     leftpad: leftpad,
     range: range,
     isNumeric: isNumeric,
-    flatten: flatten
+    flatten: flatten,
+    joinArrayUnique: joinArrayUnique
   };
 
   /**
@@ -415,7 +438,27 @@ var VAST = (function (exports) {
     unwrappedAd.impressionURLTemplates = wrapper.impressionURLTemplates.concat(unwrappedAd.impressionURLTemplates);
     unwrappedAd.extensions = wrapper.extensions.concat(unwrappedAd.extensions);
 
+    var wrapperCompanions = (wrapper.creatives || []).filter(function (creative) {
+      return creative && creative.type === 'companion';
+    });
+    var wrapperCompanionClickTracking = wrapperCompanions.reduce(function (result, creative) {
+      (creative.variations || []).forEach(function (variation) {
+        (variation.companionClickTrackingURLTemplates || []).forEach(function (url) {
+          if (result.indexOf(url) === -1) {
+            result.push(url);
+          }
+        });
+      });
+      return result;
+    }, []);
+    unwrappedAd.creatives = wrapperCompanions.concat(unwrappedAd.creatives);
+
+    var wrapperHasVideoClickTracking = wrapper.videoClickTrackingURLTemplates && wrapper.videoClickTrackingURLTemplates.length;
+
+    var wrapperHasVideoCustomClick = wrapper.videoCustomClickURLTemplates && wrapper.videoCustomClickURLTemplates.length;
+
     unwrappedAd.creatives.forEach(function (creative) {
+      // merge tracking events
       if (wrapper.trackingEvents && wrapper.trackingEvents[creative.type]) {
         for (var eventName in wrapper.trackingEvents[creative.type]) {
           var urls = wrapper.trackingEvents[creative.type][eventName];
@@ -425,32 +468,31 @@ var VAST = (function (exports) {
           creative.trackingEvents[eventName] = creative.trackingEvents[eventName].concat(urls);
         }
       }
-    });
 
-    if (wrapper.videoClickTrackingURLTemplates && wrapper.videoClickTrackingURLTemplates.length) {
-      unwrappedAd.creatives.forEach(function (creative) {
-        if (creative.type === 'linear') {
+      if (creative.type === 'linear') {
+        // merge video click tracking url
+        if (wrapperHasVideoClickTracking) {
           creative.videoClickTrackingURLTemplates = creative.videoClickTrackingURLTemplates.concat(wrapper.videoClickTrackingURLTemplates);
         }
-      });
-    }
 
-    if (wrapper.videoCustomClickURLTemplates && wrapper.videoCustomClickURLTemplates.length) {
-      unwrappedAd.creatives.forEach(function (creative) {
-        if (creative.type === 'linear') {
+        // merge video custom click url
+        if (wrapperHasVideoCustomClick) {
           creative.videoCustomClickURLTemplates = creative.videoCustomClickURLTemplates.concat(wrapper.videoCustomClickURLTemplates);
         }
-      });
-    }
 
-    // VAST 2.0 support - Use Wrapper/linear/clickThrough when Inline/Linear/clickThrough is null
-    if (wrapper.videoClickThroughURLTemplate) {
-      unwrappedAd.creatives.forEach(function (creative) {
-        if (creative.type === 'linear' && (creative.videoClickThroughURLTemplate === null || typeof creative.videoClickThroughURLTemplate === 'undefined')) {
+        // VAST 2.0 support - Use Wrapper/linear/clickThrough when Inline/Linear/clickThrough is null
+        if (wrapper.videoClickThroughURLTemplate && (creative.videoClickThroughURLTemplate === null || typeof creative.videoClickThroughURLTemplate === 'undefined')) {
           creative.videoClickThroughURLTemplate = wrapper.videoClickThroughURLTemplate;
         }
-      });
-    }
+      }
+
+      // pass wrapper companion trackers to all companions
+      if (creative.type === 'companion' && wrapperCompanionClickTracking.length) {
+        (creative.variations || []).forEach(function (variation) {
+          variation.companionClickTrackingURLTemplates = util.joinArrayUnique(variation.companionClickTrackingURLTemplates, wrapperCompanionClickTracking);
+        });
+      }
+    });
   }
 
   var parserUtils = {
@@ -1875,8 +1917,11 @@ var VAST = (function (exports) {
 
     }, {
       key: 'fetchVAST',
-      value: function fetchVAST(url, wrapperDepth, originalUrl) {
+      value: function fetchVAST(url) {
         var _this2 = this;
+
+        var wrapperDepth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+        var originalUrl = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
         return new Promise(function (resolve, reject) {
           // Process url with defined filter
@@ -1888,7 +1933,7 @@ var VAST = (function (exports) {
           _this2.emit('VAST-resolving', { url: url, wrapperDepth: wrapperDepth, originalUrl: originalUrl });
 
           _this2.urlHandler.get(url, _this2.fetchingOptions, function (err, xml) {
-            _this2.emit('VAST-resolved', { url: url, error: err });
+            _this2.emit('VAST-resolved', { url: url, error: err, xml: xml, wrapperDepth: wrapperDepth });
 
             if (err) {
               reject(err);

@@ -203,7 +203,7 @@ export class VASTParser extends EventEmitter {
     /**
      * Reset URLTemplateFilters to empty, previous replace function set with addURLTemplateFilter() are no longer called.
      */
-    clearUrlTemplateFilters(): void;
+    clearURLTemplateFilters(): void;
     /**
      * Returns how many replace function are set (ie: URLTemplateFilters length)
      */

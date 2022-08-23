@@ -30,9 +30,10 @@ describe('VASTParser', function() {
       vastParser.on('VAST-resolving', variables =>
         eventsTriggered.push({ name: 'VAST-resolving', data: variables })
       );
-      vastParser.on('VAST-resolved', variables =>
-        eventsTriggered.push({ name: 'VAST-resolved', data: variables })
-      );
+      vastParser.on('VAST-resolved', variables => {
+        delete variables.xml;
+        eventsTriggered.push({ name: 'VAST-resolved', data: variables });
+      });
 
       vastParser.addURLTemplateFilter(url => {
         this.templateFilterCalls.push(url);
@@ -81,7 +82,8 @@ describe('VASTParser', function() {
           name: 'VAST-resolved',
           data: {
             url: urlfor('wrapper-notracking.xml'),
-            error: null
+            error: null,
+            wrapperDepth: 0
           }
         },
         {
@@ -96,7 +98,8 @@ describe('VASTParser', function() {
           name: 'VAST-resolved',
           data: {
             url: urlfor('wrapper-a.xml'),
-            error: null
+            error: null,
+            wrapperDepth: 1
           }
         },
         {
@@ -111,7 +114,8 @@ describe('VASTParser', function() {
           name: 'VAST-resolved',
           data: {
             url: urlfor('wrapper-b.xml'),
-            error: null
+            error: null,
+            wrapperDepth: 2
           }
         },
         {
@@ -126,7 +130,8 @@ describe('VASTParser', function() {
           name: 'VAST-resolved',
           data: {
             url: urlfor('sample.xml'),
-            error: null
+            error: null,
+            wrapperDepth: 3
           }
         }
       ]);

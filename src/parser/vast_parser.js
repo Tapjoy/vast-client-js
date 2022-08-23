@@ -114,7 +114,7 @@ export class VASTParser extends EventEmitter {
       this.emit('VAST-resolving', { url, wrapperDepth, originalUrl });
 
       this.urlHandler.get(url, this.fetchingOptions, (err, xml) => {
-        this.emit('VAST-resolved', { url, error: err });
+        this.emit('VAST-resolved', { url, error: err, xml, wrapperDepth });
 
         if (err) {
           reject(err);

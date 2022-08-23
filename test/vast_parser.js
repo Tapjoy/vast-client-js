@@ -73,8 +73,8 @@ describe('VASTParser', function() {
           name: 'VAST-resolving',
           data: {
             url: urlfor('wrapper-notracking.xml'),
-            wrapperDepth: undefined,
-            originalUrl: undefined
+            wrapperDepth: 0,
+            originalUrl: null
           }
         },
         {

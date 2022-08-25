@@ -6,6 +6,7 @@ import { VASTResponse } from '../src/vast_response';
 import { nodeURLHandler } from '../src/urlhandlers/node_url_handler';
 import { parserUtils } from '../src/parser/parser_utils.js';
 import { util } from '../src/util/util';
+import { readFileSync } from 'fs';
 
 const vastParser = new VASTParser();
 
@@ -13,6 +14,11 @@ const urlfor = relpath =>
   `file://${path
     .resolve(path.dirname(module.filename), 'vastfiles', relpath)
     .replace(/\\/g, '/')}`;
+
+const readXmlString = relpath => {
+  const filePath = urlfor(relpath).slice(7);
+  return readFileSync(filePath, 'utf8').trim();
+};
 
 describe('VASTParser', function() {
   describe('#getAndParseVAST', function() {
@@ -31,7 +37,9 @@ describe('VASTParser', function() {
         eventsTriggered.push({ name: 'VAST-resolving', data: variables })
       );
       vastParser.on('VAST-resolved', variables => {
-        delete variables.xml;
+        // comparing xml Object causes memory crash b/c it is too deep
+        // So, convert to string it for comparison
+        variables.xml = variables.xml.toString();
         eventsTriggered.push({ name: 'VAST-resolved', data: variables });
       });
 
@@ -83,6 +91,7 @@ describe('VASTParser', function() {
           data: {
             url: urlfor('wrapper-notracking.xml'),
             error: null,
+            xml: readXmlString('wrapper-notracking.xml'),
             wrapperDepth: 0
           }
         },
@@ -99,6 +108,7 @@ describe('VASTParser', function() {
           data: {
             url: urlfor('wrapper-a.xml'),
             error: null,
+            xml: readXmlString('wrapper-a.xml'),
             wrapperDepth: 1
           }
         },
@@ -115,6 +125,7 @@ describe('VASTParser', function() {
           data: {
             url: urlfor('wrapper-b.xml'),
             error: null,
+            xml: readXmlString('wrapper-b.xml'),
             wrapperDepth: 2
           }
         },
@@ -131,6 +142,7 @@ describe('VASTParser', function() {
           data: {
             url: urlfor('sample.xml'),
             error: null,
+            xml: readXmlString('sample.xml'),
             wrapperDepth: 3
           }
         }

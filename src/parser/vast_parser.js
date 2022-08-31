@@ -103,7 +103,7 @@ export class VASTParser extends EventEmitter {
    * @emits  VASTParser#VAST-resolved
    * @return {Promise}
    */
-  fetchVAST(url, wrapperDepth, originalUrl) {
+  fetchVAST(url, wrapperDepth = 0, originalUrl = null) {
     return new Promise((resolve, reject) => {
       // Process url with defined filter
       this.URLTemplateFilters.forEach(filter => {
@@ -114,7 +114,7 @@ export class VASTParser extends EventEmitter {
       this.emit('VAST-resolving', { url, wrapperDepth, originalUrl });
 
       this.urlHandler.get(url, this.fetchingOptions, (err, xml) => {
-        this.emit('VAST-resolved', { url, error: err });
+        this.emit('VAST-resolved', { url, error: err, xml, wrapperDepth });
 
         if (err) {
           reject(err);
